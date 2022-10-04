@@ -49,9 +49,7 @@ namespace ProductMicroservice.Controllers
         }
 
         [HttpPost]
-        // TODO: [Auth comment] 
-        //[Authorize(Roles = "Administrator")]
-        // TODO: Validate unique name
+        [Authorize(Roles = "Administrator")]
         public async Task<ActionResult> CreateAsync(ProductModel product)
         {
             if (product == null || !ModelState.IsValid)
@@ -66,16 +64,11 @@ namespace ProductMicroservice.Controllers
             else
                 return NotFound();
 
-            // TODO: FIXED: CreatedAtRoute
             return CreatedAtRoute("GetByIdAsync", new { id = productId }, product);
-            // new { Id = productId }, product - обязательно
-            //return CreatedAtRoute(nameof(GetByIdAsync), new { Id = productId }, product);
         }
 
         [HttpPut("{productId}")]
-        // TODO: [Auth comment]
-        //[Authorize(Roles = "Administrator")]
-        // TODO: Validate unique name
+        [Authorize(Roles = "Administrator")]
         public async Task<ActionResult> UpdateAsync(Guid productId, ProductModel product)
         {
             bool isExist = await _productsService.IsExistAsync(productId);
@@ -91,8 +84,7 @@ namespace ProductMicroservice.Controllers
         }
 
         [HttpDelete("{productId}")]
-        // TODO: [Auth comment]
-        //[Authorize(Roles = "Administrator")]
+        [Authorize(Roles = "Administrator")]
         public async Task<ActionResult> DeleteAsync(Guid productId)
         {
             bool isExist = await _productsService.IsExistAsync(productId);
@@ -102,7 +94,6 @@ namespace ProductMicroservice.Controllers
 
             Task<ProductDto> productToDelete = _productsService.GetByIdAsync(productId)!;
 
-            // TODO: Send id exept ProductData
             await _productsService.DeleteAsync(productId, await productToDelete);
 
             return NoContent();
