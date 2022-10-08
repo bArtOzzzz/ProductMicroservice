@@ -1,5 +1,8 @@
+using AuthenticationMicroservice.HealthChecks.DatabaseCheck;
+using HealthChecks.UI.Client;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -85,6 +88,11 @@ builder.Services.AddDbContext<DataContext>(options =>
            .MigrationsAssembly("ProductMicroservice"));
 });
 
+// Add Healthcheck
+builder.Services.AddHealthChecks()
+                .AddCheck<DatabaseHealthCheck>(nameof(DatabaseHealthCheck))
+                .AddCheck<PingHealthCheck>(nameof(PingHealthCheck));
+
 // Enable CORS
 builder.Services.AddCors(options =>
 {
@@ -102,6 +110,13 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 app.UseCors("AllowSpecificOrigins");
+
+// Healthcheck 
+app.MapHealthChecks("/health", new HealthCheckOptions()
+{
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse,
+    AllowCachingResponses = false
+});
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
