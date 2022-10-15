@@ -1,4 +1,5 @@
 using AuthenticationMicroservice.HealthChecks.DatabaseCheck;
+using FluentValidation.AspNetCore;
 using HealthChecks.UI.Client;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -15,6 +16,15 @@ using System.Text;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add Fluent Validation
+#pragma warning disable CS0618 // Type or member is obsolete
+builder.Services.AddFluentValidation(x =>
+{
+    x.ImplicitlyValidateChildProperties = true;
+    x.RegisterValidatorsFromAssemblies(AppDomain.CurrentDomain.GetAssemblies());
+});
+#pragma warning restore CS0618 // Type or member is obsolete
 
 // Add Masstransit && RabbitMQ
 builder.Services.AddMassTransit(x =>
