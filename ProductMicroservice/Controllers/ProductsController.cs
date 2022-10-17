@@ -1,15 +1,16 @@
-﻿using AutoMapper;
+﻿using ProductMicroservice.Models.Response;
+using ProductMicroservice.Models.Request;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ProductMicroservice.Models.Request;
-using ProductMicroservice.Models.Response;
 using Services.Abstract;
 using Services.Dto;
+using AutoMapper;
 
 namespace ProductMicroservice.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
+    [ApiVersion("1.0")]
     public class ProductsController : Controller
     {
         private readonly IProductsService _productsService;
@@ -24,6 +25,7 @@ namespace ProductMicroservice.Controllers
 
         [HttpGet]
         [Authorize(Roles = "User, Administrator")]
+        [MapToApiVersion("1.0")]
         public async Task<ActionResult> GetAllAsync()
         {
             if (!ModelState.IsValid)
@@ -36,6 +38,7 @@ namespace ProductMicroservice.Controllers
 
         [HttpGet("{productId}", Name = "GetByIdAsync")]
         [Authorize(Roles = "Administrator")]
+        [MapToApiVersion("1.0")]
         public async Task<ActionResult> GetByIdAsync(Guid productId)
         {
             bool isExist = await _productsService.IsExistAsync(productId);
@@ -50,6 +53,7 @@ namespace ProductMicroservice.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Administrator")]
+        [MapToApiVersion("1.0")]
         public async Task<ActionResult> CreateAsync(ProductModel product)
         {
             if (product == null || !ModelState.IsValid)
@@ -69,6 +73,7 @@ namespace ProductMicroservice.Controllers
 
         [HttpPut("{productId}")]
         [Authorize(Roles = "Administrator")]
+        [MapToApiVersion("1.0")]
         public async Task<ActionResult> UpdateAsync(Guid productId, ProductModel product)
         {
             bool isExist = await _productsService.IsExistAsync(productId);
@@ -85,6 +90,7 @@ namespace ProductMicroservice.Controllers
 
         [HttpDelete("{productId}")]
         [Authorize(Roles = "Administrator")]
+        [MapToApiVersion("1.0")]
         public async Task<ActionResult> DeleteAsync(Guid productId)
         {
             bool isExist = await _productsService.IsExistAsync(productId);
