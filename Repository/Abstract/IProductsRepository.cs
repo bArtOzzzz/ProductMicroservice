@@ -6,7 +6,7 @@ namespace Repositories.Abstract
     {
         //GET
         Task<List<ProductEntity>> GetAllAsync();
-        Task<ProductEntity?> GetByIdAsync(Guid id);
+        Task<ProductEntity?> GetByIdAsync(Guid productId);
 
         // POST
         Task<Guid> CreateAsync(ProductEntity product);

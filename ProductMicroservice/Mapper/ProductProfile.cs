@@ -1,8 +1,8 @@
-﻿using AutoMapper;
+﻿using ProductMicroservice.Models.Response;
 using ProductMicroservice.Models.Request;
-using ProductMicroservice.Models.Response;
 using Repositories.Entities;
 using Services.Dto;
+using AutoMapper;
 
 namespace ProductMicroservice.Mapper
 {

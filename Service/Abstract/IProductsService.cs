@@ -6,7 +6,7 @@ namespace Services.Abstract
     {
         //GET
         Task<List<ProductDto>> GetAllAsync();
-        Task<ProductDto?> GetByIdAsync(Guid id);
+        Task<ProductDto?> GetByIdAsync(Guid productId);
 
         // POST
         Task<Guid> CreateAsync(ProductDto product);
@@ -15,7 +15,7 @@ namespace Services.Abstract
         Task<string> UpdateAsync(Guid productId, ProductDto product);
 
         // DELETE
-        Task<bool> DeleteAsync(Guid id, ProductDto product);
+        Task<bool> DeleteAsync(Guid productId, ProductDto product);
 
         // EXISTS
         Task<bool> IsExistAsync(Guid productId);

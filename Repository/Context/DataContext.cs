@@ -16,7 +16,6 @@ namespace Repositories.Context
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // Set main settings for entities
-            #region Product database settings
             modelBuilder.Entity<ProductEntity>(
                 entity =>
                 {
@@ -26,10 +25,8 @@ namespace Repositories.Context
                     entity.HasIndex(n => n.Name)
                           .IsUnique();
                 });
-            #endregion
 
             // SEEDDATA
-            #region PRODUCT SEEDDATA 
             modelBuilder.Entity<ProductEntity>().HasData(
                 new ProductEntity
                 {
@@ -70,7 +67,6 @@ namespace Repositories.Context
                     Name = "Egg",
                     LinkImage = "https://g.foolcdn.com/image/?url=https%3A//g.foolcdn.com/editorial/images/218648/eggs-brown-getty_BSCxkDW.jpg&w=2000&op=resize"
                 });
-            #endregion
         }
     }
 }

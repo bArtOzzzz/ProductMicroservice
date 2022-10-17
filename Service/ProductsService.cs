@@ -1,9 +1,9 @@
-﻿using AutoMapper;
-using MassTransit;
-using Repositories.Abstract;
+﻿using Repositories.Abstract;
 using Repositories.Entities;
 using Services.Abstract;
 using Services.Dto;
+using MassTransit;
+using AutoMapper;
 
 namespace Services
 {
@@ -30,9 +30,9 @@ namespace Services
             return _mapper.Map<List<ProductDto>>(products);
         }
 
-        public async Task<ProductDto?> GetByIdAsync(Guid id)
+        public async Task<ProductDto?> GetByIdAsync(Guid productId)
         {
-            var product = await _productsRepository.GetByIdAsync(id);
+            var product = await _productsRepository.GetByIdAsync(productId);
 
             return _mapper.Map<ProductDto>(product);
         }
@@ -65,11 +65,11 @@ namespace Services
         }
 
         // DELETE
-        public async Task<bool> DeleteAsync(Guid id, ProductDto product)
+        public async Task<bool> DeleteAsync(Guid productId, ProductDto product)
         {
             var productMap = _mapper.Map<ProductEntity>(product);
 
-            productMap.Id = id;
+            productMap.Id = productId;
 
             await _productsRepository.DeleteAsync(productMap);
 

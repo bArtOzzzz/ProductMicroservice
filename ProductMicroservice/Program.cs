@@ -30,10 +30,7 @@ builder.Services.AddFluentValidation(x =>
 #pragma warning restore CS0618
 
 // Add Masstransit && RabbitMQ
-builder.Services.AddMassTransit(x =>
-{
-    x.UsingRabbitMq();
-});
+builder.Services.AddMassTransit(x => x.UsingRabbitMq());
 
 // Add services to the container.
 builder.Services.AddControllers()
