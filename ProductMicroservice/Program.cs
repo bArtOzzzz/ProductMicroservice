@@ -1,30 +1,31 @@
 using AuthenticationMicroservice.HealthChecks.DatabaseCheck;
-using FluentValidation.AspNetCore;
-using HealthChecks.UI.Client;
-using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.Text.Json.Serialization;
+using Microsoft.EntityFrameworkCore;
+using FluentValidation.AspNetCore;
 using Microsoft.OpenApi.Models;
-using Repositories;
+using HealthChecks.UI.Client;
 using Repositories.Abstract;
 using Repositories.Context;
-using Services;
 using Services.Abstract;
+using Repositories;
 using System.Text;
-using System.Text.Json.Serialization;
+using MassTransit;
+using Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add Fluent Validation
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618
 builder.Services.AddFluentValidation(x =>
 {
     x.ImplicitlyValidateChildProperties = true;
+    x.ImplicitlyValidateRootCollectionElements = true;
     x.RegisterValidatorsFromAssemblies(AppDomain.CurrentDomain.GetAssemblies());
 });
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618
 
 // Add Masstransit && RabbitMQ
 builder.Services.AddMassTransit(x =>
