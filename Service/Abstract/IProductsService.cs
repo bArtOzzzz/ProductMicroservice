@@ -12,7 +12,7 @@ namespace Services.Abstract
         Task<Guid> CreateAsync(ProductDto product);
 
         // PUT
-        Task<string> UpdateAsync(Guid productId, ProductDto product);
+        Task<string?> UpdateAsync(Guid productId, ProductDto product);
 
         // DELETE
         Task<bool> DeleteAsync(Guid productId, ProductDto product);

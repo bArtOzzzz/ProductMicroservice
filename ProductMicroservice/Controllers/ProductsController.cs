@@ -32,8 +32,14 @@ namespace ProductMicroservice.Controllers
                 return NotFound();
 
             var product = await _productsService.GetAllAsync();
+            var productMap = _mapper.Map<List<ProductResponse>>(product);
 
-            return Ok(_mapper.Map<List<ProductResponse>>(product));
+            if(productMap.Any())
+            {
+                return Ok(productMap);
+            }
+
+            return NotFound();
         }
 
         [HttpGet("{productId}", Name = "GetByIdAsync")]
@@ -47,8 +53,14 @@ namespace ProductMicroservice.Controllers
                 return NotFound();
 
             var product = await _productsService.GetByIdAsync(productId);
+            var productMap = _mapper.Map<ProductResponse>(product);
 
-            return Ok(_mapper.Map<ProductResponse>(product));
+            if(productMap != null)
+            {
+                return Ok(productMap);
+            }
+
+            return NotFound();
         }
 
         [HttpPost]
@@ -56,7 +68,7 @@ namespace ProductMicroservice.Controllers
         [MapToApiVersion("1.0")]
         public async Task<ActionResult> CreateAsync(ProductModel product)
         {
-            if (product == null || !ModelState.IsValid)
+            if (string.IsNullOrEmpty(product.Name) || !ModelState.IsValid)
                 return NotFound();
 
             var productMap = _mapper.Map<ProductDto>(product);
@@ -78,7 +90,7 @@ namespace ProductMicroservice.Controllers
         {
             bool isExist = await _productsService.IsExistAsync(productId);
 
-            if (!isExist || product == null || !ModelState.IsValid)
+            if (!isExist || string.IsNullOrEmpty(product.Name) || !ModelState.IsValid)
                 return NotFound();
 
             var productMap = _mapper.Map<ProductDto>(product);

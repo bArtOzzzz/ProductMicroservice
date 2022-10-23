@@ -25,9 +25,9 @@ namespace Services
         // GET
         public async Task<List<ProductDto>> GetAllAsync()
         {
-            var products = await _productsRepository.GetAllAsync();
+            var productsResponseContent = await _productsRepository.GetAllAsync();
 
-            return _mapper.Map<List<ProductDto>>(products);
+            return _mapper.Map<List<ProductDto>>(productsResponseContent);
         }
 
         public async Task<ProductDto?> GetByIdAsync(Guid productId)
@@ -53,12 +53,12 @@ namespace Services
         }
 
         // PUT
-        public async Task<string> UpdateAsync(Guid productId, ProductDto product)
+        public async Task<string?> UpdateAsync(Guid productId, ProductDto product)
         {
             var productMap = _mapper.Map<ProductEntity>(product);
 
             product.CrudOperationsInfo = CrudOperationsInfo.Update;
-            product.PreviousName = await _productsRepository.UpdateAsync(productId, productMap); ;
+            product.PreviousName = await _productsRepository.UpdateAsync(productId, productMap);
             await _publishEndpoint.Publish(product);
 
             return product.PreviousName;

@@ -27,8 +27,6 @@ namespace Repositories
         }
 
         // POST
-        // TODO: FIXED: Refactoring
-        // TODO: FIXED: Fix DateTime (Not working)
         public async Task<Guid> CreateAsync(ProductEntity product)
         {
             ProductEntity productEntity = new()
