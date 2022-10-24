@@ -10,12 +10,11 @@ using Moq;
 
 namespace ProductUnitTests.Systems.Controllers
 {
-    public class ProductTest_Delete
+    public class ProductTest_Delete : IAsyncLifetime
     {
         private readonly IMapper _mapper;
         private readonly IProductsService _fakeProductsService;
         private readonly ProductsController _productsController;
-        private readonly FakeProductService _fakeProductsFixture;
 
         private readonly Mock<IProductsService> _mockProductService = new();
 
@@ -24,10 +23,14 @@ namespace ProductUnitTests.Systems.Controllers
             MapperConfiguration mappingConfig = new(mc => mc.AddProfile(new ProductProfile()));
             _mapper = mappingConfig.CreateMapper();
 
-            _fakeProductsFixture = new FakeProductService();
             _fakeProductsService = new FakeProductService();
             _productsController = new ProductsController(_mockProductService.Object, _mapper);
         }
+
+        public async Task InitializeAsync() => 
+            await _productsController.DeleteAsync(It.IsAny<Guid>());
+
+        public async Task DisposeAsync() => await Task.CompletedTask;
 
         [Fact]
         public async Task DeleteAsync_OnSuccess_ReturnsStatusCode204()
@@ -79,8 +82,8 @@ namespace ProductUnitTests.Systems.Controllers
                 .DeleteAsync(id);
 
             // Assert
-            _mockProductService.Verify(service => service.IsExistAsync(id),
-                                                  Times.Once(),
+            _mockProductService.Verify(service => service.IsExistAsync(It.IsAny<Guid>()),
+                                                  Times.Exactly(2),
                                                   "Send was never invoked");
         }
     }

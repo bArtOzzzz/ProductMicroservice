@@ -1,7 +1,6 @@
 ﻿using ProductMicroservice.Models.Request;
 using Services.Abstract;
 using Services.Dto;
-using System.Xml.Linq;
 
 namespace ProductUnitTests.Fixtures
 {

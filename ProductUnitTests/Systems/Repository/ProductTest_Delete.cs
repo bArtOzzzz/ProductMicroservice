@@ -8,10 +8,11 @@ using AutoMapper;
 using Services;
 using Xunit;
 using Moq;
+using Services.Dto;
 
 namespace ProductUnitTests.Systems.Repository
 {
-    public class ProductTest_Delete
+    public class ProductTest_Delete : IAsyncLifetime
     {
         private readonly IMapper _mapper;
         private readonly IProductsRepository _fakeProductsRepository;
@@ -30,6 +31,12 @@ namespace ProductUnitTests.Systems.Repository
             _fakeProductsRepository = new FakeRepositoryService();
             _productsService = new ProductsService(_mockProductRepository.Object, _mockMassTransit.Object, _mapper);
         }
+
+        public async Task DisposeAsync() => 
+            await _productsService.DeleteAsync(new Guid("a1fc0496-1b9a-4023-8e44-ac611652ddf1"),
+                                               _fakeRepositoryService.CreateAsync_WhenValidData);
+
+        public async Task InitializeAsync() => await Task.CompletedTask;
 
         [Fact]
         public async Task DeleteAsync_OnSuccess_ReturnsRightType()

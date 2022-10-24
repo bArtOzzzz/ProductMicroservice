@@ -11,7 +11,7 @@ using Moq;
 
 namespace ProductUnitTests.Systems.Services
 {
-    public class ProductTest_GetAll
+    public class ProductTest_GetAll : IAsyncLifetime
     {
         private readonly IMapper _mapper;
         private readonly IProductsRepository _fakeProductsRepository;
@@ -28,6 +28,11 @@ namespace ProductUnitTests.Systems.Services
             _fakeProductsRepository = new FakeRepositoryService();
             _productsService = new ProductsService(_mockProductRepository.Object, _mockMassTransit.Object, _mapper);
         }
+
+        public async Task InitializeAsync() => 
+            await _productsService.GetAllAsync();
+
+        public async Task DisposeAsync() => await Task.CompletedTask;
 
         [Fact]
         public async Task GetAllAsync_WhenValidData_ReturnsRightType()
@@ -55,7 +60,7 @@ namespace ProductUnitTests.Systems.Services
 
             // Assert
             _mockProductRepository.Verify(p => p.GetAllAsync(),
-                                               Times.Once(),
+                                               Times.Exactly(2),
                                                "Send was never invoked");
         }
     }

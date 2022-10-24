@@ -12,11 +12,13 @@ using Moq;
 
 namespace ProductUnitTests.Systems.Controllers
 {
-    public class ProductTest_GetAll
+    public class ProductTest_GetAll : IAsyncLifetime
     {
         private readonly IMapper _mapper;
         private readonly IProductsService _fakeProductsService;
         private readonly ProductsController _productsController;
+
+        private ActionResult _result = null!;
 
         private readonly Mock<IProductsService> _mockProductService = new();
 
@@ -28,6 +30,11 @@ namespace ProductUnitTests.Systems.Controllers
             _fakeProductsService = new FakeProductService();
             _productsController = new ProductsController(_mockProductService.Object, _mapper);
         }
+        public async Task InitializeAsync() =>
+            _result = await _productsController.GetAllAsync();
+
+        public async Task DisposeAsync() => await Task.CompletedTask;
+
 
         [Fact]
         public async Task GetAllAsync_OnSuccess_ReturnsStatusCode200()
@@ -60,7 +67,7 @@ namespace ProductUnitTests.Systems.Controllers
         }
 
         [Fact]
-        public async Task GetAllAsync_OnSuccess_ReturnsListOfProducts()
+        public async Task GetAllAsync_OnSuccess_ReturnsRightType()
         {
             // Arrange
             _mockProductService.Setup(service => service.GetAllAsync())
@@ -70,10 +77,9 @@ namespace ProductUnitTests.Systems.Controllers
             var result = (OkObjectResult)await _productsController.GetAllAsync();
 
             // Assert
-            result.Should().BeOfType<OkObjectResult>();
-            result.StatusCode.Should().Be(200);
             result.Value.Should().BeOfType<List<ProductResponse>>();
         }
+
 
         [Fact]
         public async Task GetAllAsync_OnSuccess_Verify()
@@ -87,7 +93,7 @@ namespace ProductUnitTests.Systems.Controllers
 
             // Assert
             _mockProductService.Verify(p => p.GetAllAsync(),
-                                            Times.Once(),
+                                            Times.Exactly(2),
                                             "Send was never invoked");
         }
     }

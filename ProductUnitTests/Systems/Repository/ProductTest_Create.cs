@@ -8,10 +8,11 @@ using AutoMapper;
 using Services;
 using Xunit;
 using Moq;
+using Services.Dto;
 
 namespace ProductUnitTests.Systems.Services
 {
-    public class ProductTest_Create
+    public class ProductTest_Create : IAsyncLifetime
     {
         private readonly IMapper _mapper;
         private readonly ProductsService _productsService;
@@ -28,6 +29,11 @@ namespace ProductUnitTests.Systems.Services
             _fakeRepositoryFixture = new FakeRepositoryService();
             _productsService = new ProductsService(_mockProductRepository.Object, _mockMassTransit.Object, _mapper);
         }
+
+        public async Task DisposeAsync() => 
+            await _productsService.CreateAsync(_fakeRepositoryFixture.CreateAsync_WhenValidData);
+
+        public async Task InitializeAsync() => await Task.CompletedTask;
 
         [Fact]
         public async Task CreateAsync_OnSuccess_ReturnsRightType()

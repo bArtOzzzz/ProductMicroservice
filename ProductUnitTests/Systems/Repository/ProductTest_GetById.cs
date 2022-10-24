@@ -11,7 +11,7 @@ using Moq;
 
 namespace ProductUnitTests.Systems.Services
 {
-    public class FakeProductService
+    public class FakeProductService : IAsyncLifetime
     {
         private readonly IMapper _mapper;
         private readonly IProductsRepository _fakeProductsRepository;
@@ -28,6 +28,11 @@ namespace ProductUnitTests.Systems.Services
             _fakeProductsRepository = new FakeRepositoryService();
             _productsService = new ProductsService(_mockProductRepository.Object, _mockMassTransit.Object, _mapper);
         }
+
+        public async Task InitializeAsync() => 
+            await _productsService.GetByIdAsync(It.IsAny<Guid>());
+
+        public async Task DisposeAsync() => await Task.CompletedTask;
 
         [Fact]
         public async Task GetByIdAsync_WhenValidData_ReturnsRightType()

@@ -11,7 +11,7 @@ using Moq;
 
 namespace ProductUnitTests.Systems.Controllers
 {
-    public class ProductTest_GetById
+    public class ProductTest_GetById : IAsyncLifetime
     {
         private readonly IMapper _mapper;
         private readonly IProductsService _fakeProductsService;
@@ -27,6 +27,11 @@ namespace ProductUnitTests.Systems.Controllers
             _fakeProductsService = new FakeProductService();
             _productsController = new ProductsController(_mockProductService.Object, _mapper);
         }
+
+        public async Task InitializeAsync() => 
+            await _productsController.GetByIdAsync(It.IsAny<Guid>());
+
+        public async Task DisposeAsync() => await Task.CompletedTask;
 
         [Fact]
         public async Task GetByIdAsync_OnSuccess_ReturnsStatusCode200()
@@ -87,8 +92,6 @@ namespace ProductUnitTests.Systems.Controllers
                 .GetByIdAsync(testGuid);
 
             // Assert
-            result.Should().BeOfType<OkObjectResult>();
-            result.StatusCode.Should().Be(200);
             result.Value.Should().BeOfType<ProductResponse>();
         }
 
@@ -129,8 +132,8 @@ namespace ProductUnitTests.Systems.Controllers
             var result = await _productsController.GetByIdAsync(Id);
 
             // Assert
-            _mockProductService.Verify(p => p.IsExistAsync(Id),
-                                            Times.Once(),
+            _mockProductService.Verify(p => p.IsExistAsync(It.IsAny<Guid>()),
+                                            Times.Exactly(2),
                                             "Send was never invoked");
         }
     }

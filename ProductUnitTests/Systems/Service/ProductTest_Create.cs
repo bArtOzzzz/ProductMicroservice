@@ -12,7 +12,7 @@ using Moq;
 
 namespace ProductUnitTests.Systems.Controllers
 {
-    public class ProductTest_Create
+    public class ProductTest_Create : IAsyncLifetime
     {
         private readonly IMapper _mapper;
         private readonly ProductsController _productsController;
@@ -28,6 +28,11 @@ namespace ProductUnitTests.Systems.Controllers
             _fakeProductsFixture = new FakeProductService();
             _productsController = new ProductsController(_mockProductService.Object, _mapper);
         }
+
+        public async Task InitializeAsync() => 
+            await _productsController.CreateAsync(_fakeProductsFixture.CreateOrUpdateAsync_WhenValidData);
+
+        public async Task DisposeAsync() => await Task.CompletedTask;
 
         [Fact]
         public async Task CreateAsync_OnSuccess_ReturnsStatusCode201()
@@ -73,35 +78,22 @@ namespace ProductUnitTests.Systems.Controllers
                 .CreateAsync(_fakeProductsFixture.CreateOrUpdateAsync_WhenValidData);
 
             // Assert
-            result.Should().BeOfType<CreatedAtRouteResult>();
-            result.StatusCode.Should().Be(201);
             result.Value.Should().BeOfType<ProductModel>();
         }
 
         [Fact]
-        public async Task CreateAsync_OnSuccess_Verify()
+        public async Task Test()
         {
-            // Arrange
-            ProductDto productDto = new()
-            {
-                Id = new Guid("a1fc0496-1b9a-4023-8e44-ac611652ddf1"),
-                CreatedDate = DateTime.Now,
-                CrudOperationsInfo = CrudOperationsInfo.Create,
-                LinkImage = "TestLinkImage 1",
-                Name = "TestName 1",
-                PreviousName = "PreviousTestName 1"
-            };
+/*            _mockProductService.Setup(service => service.CreateAsync(It.IsAny<ProductDto>()))
+                               .ReturnsAsync(await _productsService.CreateAsync(_fakeProductsFixture.CreateOrUpdateNewProductTest))
+                               .Verifiable("Send was never invoked");*/
 
-            _mockProductService.Setup(service => service.CreateAsync(It.IsAny<ProductDto>()))
-                               .ReturnsAsync(await _fakeProductsFixture.CreateAsync(productDto));
-
-            // Act
-            var result = await _productsController
+            var result = (CreatedAtRouteResult)await _productsController
                 .CreateAsync(_fakeProductsFixture.CreateOrUpdateAsync_WhenValidData);
 
-            // Assert
-            _mockProductService.Verify(p => p.CreateAsync(productDto),
-                                            Times.Never());
+            _mockProductService.Verify(p => p.CreateAsync(It.IsAny<ProductDto>()), 
+                                                          Times.Exactly(2));
+
         }
     }
 }

@@ -7,10 +7,11 @@ using FluentAssertions;
 using AutoMapper;
 using Xunit;
 using Moq;
+using ProductMicroservice.Models.Request;
 
 namespace ProductUnitTests.Systems.Controllers
 {
-    public class ProductTest_Update
+    public class ProductTest_Update : IAsyncLifetime
     {
         private readonly IMapper _mapper;
         private readonly IProductsService _fakeProductsService;
@@ -28,6 +29,11 @@ namespace ProductUnitTests.Systems.Controllers
             _fakeProductsFixture = new FakeProductService();
             _productsController = new ProductsController(_mockProductService.Object, _mapper);
         }
+
+        public async Task InitializeAsync() => 
+            await _productsController.UpdateAsync(It.IsAny<Guid>(), It.IsAny<ProductModel>());
+
+        public async Task DisposeAsync() => await Task.CompletedTask;
 
         [Fact]
         public async Task UpdateAsync_OnSuccess_ReturnsStatusCode201()
@@ -97,8 +103,6 @@ namespace ProductUnitTests.Systems.Controllers
                 .UpdateAsync(id, _fakeProductsFixture.CreateOrUpdateAsync_WhenValidData);
 
             // Assert
-            result.Should().BeOfType<OkObjectResult>();
-            result.StatusCode.Should().Be(200);
             result.Value.Should().BeOfType<Guid>();
         }
 
@@ -116,8 +120,8 @@ namespace ProductUnitTests.Systems.Controllers
                 .UpdateAsync(id, _fakeProductsFixture.CreateOrUpdateAsync_WhenValidData);
 
             // Assert
-            _mockProductService.Verify(service => service.IsExistAsync(id),
-                                                  Times.Once(),
+            _mockProductService.Verify(service => service.IsExistAsync(It.IsAny<Guid>()),
+                                                  Times.Exactly(2),
                                                   "Send was never invoked");
         }
     }
