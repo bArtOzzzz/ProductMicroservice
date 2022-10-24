@@ -13,7 +13,7 @@ namespace ProductUnitTests.Systems.Controllers
     public class ProductTest_Update
     {
         private readonly IMapper _mapper;
-        private readonly IProductsService _productsService;
+        private readonly IProductsService _fakeProductsService;
         private readonly ProductsController _productsController;
         private readonly FakeProductService _fakeProductsFixture;
 
@@ -21,17 +21,10 @@ namespace ProductUnitTests.Systems.Controllers
 
         public ProductTest_Update()
         {
-            if (_mapper == null)
-            {
-                var mappingConfig = new MapperConfiguration(mc =>
-                {
-                    mc.AddProfile(new ProductProfile());
-                });
-                IMapper mapper = mappingConfig.CreateMapper();
-                _mapper = mapper;
-            }
+            MapperConfiguration mappingConfig = new(mc => mc.AddProfile(new ProductProfile()));
+            _mapper = mappingConfig.CreateMapper();
 
-            _productsService = new FakeProductService();
+            _fakeProductsService = new FakeProductService();
             _fakeProductsFixture = new FakeProductService();
             _productsController = new ProductsController(_mockProductService.Object, _mapper);
         }
@@ -43,7 +36,7 @@ namespace ProductUnitTests.Systems.Controllers
             Guid id = new("595823ca-aab8-4889-a6df-944f999b4270");
 
             _mockProductService.Setup(service => service.IsExistAsync(It.IsAny<Guid>()))
-                   .ReturnsAsync(await _productsService.IsExistAsync(id));
+                   .ReturnsAsync(await _fakeProductsService.IsExistAsync(id));
 
             // Act
             var result = (OkObjectResult)await _productsController
@@ -51,6 +44,7 @@ namespace ProductUnitTests.Systems.Controllers
 
             // Assert
             result.Should().BeOfType<OkObjectResult>();
+            result.StatusCode.Should().Be(200);
         }
 
         [Fact]
@@ -60,7 +54,7 @@ namespace ProductUnitTests.Systems.Controllers
             Guid Id = Guid.NewGuid();
 
             _mockProductService.Setup(service => service.IsExistAsync(It.IsAny<Guid>()))
-                   .ReturnsAsync(await _productsService.IsExistAsync(Id));
+                   .ReturnsAsync(await _fakeProductsService.IsExistAsync(Id));
 
             // Act
             var result = (NotFoundResult)await _productsController
@@ -68,6 +62,7 @@ namespace ProductUnitTests.Systems.Controllers
 
             // Assert
             result.Should().BeOfType<NotFoundResult>();
+            result.StatusCode.Should().Be(404);
         }
 
         [Fact]
@@ -77,7 +72,7 @@ namespace ProductUnitTests.Systems.Controllers
             Guid id = new("98691dd5-737f-4610-a842-b029375b0157");
 
             _mockProductService.Setup(service => service.IsExistAsync(It.IsAny<Guid>()))
-                   .ReturnsAsync(await _productsService.IsExistAsync(id));
+                   .ReturnsAsync(await _fakeProductsService.IsExistAsync(id));
 
             // Act
             var result = (NotFoundResult)await _productsController
@@ -85,6 +80,7 @@ namespace ProductUnitTests.Systems.Controllers
 
             // Assert
             result.Should().BeOfType<NotFoundResult>();
+            result.StatusCode.Should().Be(404);
         }
 
         [Fact]
@@ -94,7 +90,7 @@ namespace ProductUnitTests.Systems.Controllers
             Guid id = new("98691dd5-737f-4610-a842-b029375b0157");
 
             _mockProductService.Setup(service => service.IsExistAsync(It.IsAny<Guid>()))
-                .ReturnsAsync(await _productsService.IsExistAsync(id));
+                .ReturnsAsync(await _fakeProductsService.IsExistAsync(id));
 
             // Act
             var result = (OkObjectResult)await _productsController
@@ -102,17 +98,18 @@ namespace ProductUnitTests.Systems.Controllers
 
             // Assert
             result.Should().BeOfType<OkObjectResult>();
+            result.StatusCode.Should().Be(200);
             result.Value.Should().BeOfType<Guid>();
         }
 
         [Fact]
-        public async Task UpdateAsync_OnSuccess_Verify()
+        public async Task UpdateAsync_OnSuccess_VerifyIsExistAsync()
         {
             // Arrange
             Guid id = new("595823ca-aab8-4889-a6df-944f999b4270");
 
             _mockProductService.Setup(service => service.IsExistAsync(It.IsAny<Guid>()))
-                   .ReturnsAsync(await _productsService.IsExistAsync(id));
+                   .ReturnsAsync(await _fakeProductsService.IsExistAsync(id));
 
             // Act
             var result = await _productsController

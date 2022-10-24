@@ -1,6 +1,7 @@
 ﻿using ProductMicroservice.Models.Request;
 using Services.Abstract;
 using Services.Dto;
+using System.Xml.Linq;
 
 namespace ProductUnitTests.Fixtures
 {
@@ -26,6 +27,17 @@ namespace ProductUnitTests.Fixtures
                     Name = "TestName 4", PreviousName = "PreviousTestName 4"}
             };
         }
+
+        // POST DTO
+        public ProductDto CreateOrUpdateNewProductTest = new()
+        {
+            Id = new Guid("a1fc0496-1b9a-4023-8e44-ac611652ddf1"),
+            CreatedDate = DateTime.Now,
+            CrudOperationsInfo = CrudOperationsInfo.Create,
+            LinkImage = "TestLinkImage 1",
+            Name = "TestName 1",
+            PreviousName = "PreviousTestName 1"
+        };
 
         // POST MODEL
         public ProductModel CreateOrUpdateAsync_WhenValidData = new()
@@ -62,7 +74,7 @@ namespace ProductUnitTests.Fixtures
         // PUT
         public Task<string?> UpdateAsync(Guid productId, ProductDto product)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(product.PreviousName);
         }
 
         // DELETE

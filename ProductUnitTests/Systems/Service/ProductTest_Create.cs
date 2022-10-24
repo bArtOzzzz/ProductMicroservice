@@ -5,10 +5,10 @@ using ProductUnitTests.Fixtures;
 using Microsoft.AspNetCore.Mvc;
 using Services.Abstract;
 using FluentAssertions;
+using Services.Dto;
 using AutoMapper;
 using Xunit;
 using Moq;
-using Services.Dto;
 
 namespace ProductUnitTests.Systems.Controllers
 {
@@ -22,15 +22,8 @@ namespace ProductUnitTests.Systems.Controllers
 
         public ProductTest_Create()
         {
-            if (_mapper == null)
-            {
-                var mappingConfig = new MapperConfiguration(mc =>
-                {
-                    mc.AddProfile(new ProductProfile());
-                });
-                IMapper mapper = mappingConfig.CreateMapper();
-                _mapper = mapper;
-            }
+            MapperConfiguration mappingConfig = new(mc => mc.AddProfile(new ProductProfile()));
+            _mapper = mappingConfig.CreateMapper();
 
             _fakeProductsFixture = new FakeProductService();
             _productsController = new ProductsController(_mockProductService.Object, _mapper);
@@ -45,6 +38,7 @@ namespace ProductUnitTests.Systems.Controllers
 
             // Assert
             result.Should().BeOfType<CreatedAtRouteResult>();
+            result.StatusCode.Should().Be(201);
         }
 
         [Fact]
@@ -56,6 +50,7 @@ namespace ProductUnitTests.Systems.Controllers
 
             // Assert
             result.Should().BeOfType<NotFoundResult>();
+            result.StatusCode.Should().Be(404);
         }
 
         [Fact]
@@ -67,6 +62,7 @@ namespace ProductUnitTests.Systems.Controllers
 
             // Assert
             result.Should().BeOfType<NotFoundResult>();
+            result.StatusCode.Should().Be(404);
         }
 
         [Fact]
@@ -78,6 +74,7 @@ namespace ProductUnitTests.Systems.Controllers
 
             // Assert
             result.Should().BeOfType<CreatedAtRouteResult>();
+            result.StatusCode.Should().Be(201);
             result.Value.Should().BeOfType<ProductModel>();
         }
 
@@ -85,7 +82,7 @@ namespace ProductUnitTests.Systems.Controllers
         public async Task CreateAsync_OnSuccess_Verify()
         {
             // Arrange
-            ProductDto productDto = new ProductDto()
+            ProductDto productDto = new()
             {
                 Id = new Guid("a1fc0496-1b9a-4023-8e44-ac611652ddf1"),
                 CreatedDate = DateTime.Now,

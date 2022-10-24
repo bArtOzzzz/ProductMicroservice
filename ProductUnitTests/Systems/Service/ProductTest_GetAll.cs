@@ -22,16 +22,8 @@ namespace ProductUnitTests.Systems.Controllers
 
         public ProductTest_GetAll()
         {
-            if (_mapper == null)
-            {
-                var mappingConfig = new MapperConfiguration(mc =>
-                {
-                    mc.AddProfile(new ProductProfile());
-                });
-
-                IMapper mapper = mappingConfig.CreateMapper();
-                _mapper = mapper;
-            }
+            MapperConfiguration mappingConfig = new(mc => mc.AddProfile(new ProductProfile()));
+            _mapper = mappingConfig.CreateMapper();
 
             _fakeProductsService = new FakeProductService();
             _productsController = new ProductsController(_mockProductService.Object, _mapper);
@@ -45,10 +37,11 @@ namespace ProductUnitTests.Systems.Controllers
                                .ReturnsAsync(await _fakeProductsService.GetAllAsync());
 
             // Act
-            var result = await _productsController.GetAllAsync();
+            var result = (OkObjectResult)await _productsController.GetAllAsync();
 
             // Assert
             result.Should().BeOfType<OkObjectResult>();
+            result.StatusCode.Should().Be(200);
         }
 
         [Fact]
@@ -59,10 +52,11 @@ namespace ProductUnitTests.Systems.Controllers
                                .ReturnsAsync(It.IsAny<List<ProductDto>>());
 
             // Act
-            var result = await _productsController.GetAllAsync();
+            var result = (NotFoundResult)await _productsController.GetAllAsync();
 
             // Assert
             result.Should().BeOfType<NotFoundResult>();
+            result.StatusCode.Should().Be(404);
         }
 
         [Fact]
@@ -77,6 +71,7 @@ namespace ProductUnitTests.Systems.Controllers
 
             // Assert
             result.Should().BeOfType<OkObjectResult>();
+            result.StatusCode.Should().Be(200);
             result.Value.Should().BeOfType<List<ProductResponse>>();
         }
 

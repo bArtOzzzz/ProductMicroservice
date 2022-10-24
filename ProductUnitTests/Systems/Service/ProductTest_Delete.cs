@@ -7,14 +7,13 @@ using FluentAssertions;
 using AutoMapper;
 using Xunit;
 using Moq;
-using Services.Dto;
 
 namespace ProductUnitTests.Systems.Controllers
 {
     public class ProductTest_Delete
     {
         private readonly IMapper _mapper;
-        private readonly IProductsService _productsService;
+        private readonly IProductsService _fakeProductsService;
         private readonly ProductsController _productsController;
         private readonly FakeProductService _fakeProductsFixture;
 
@@ -22,18 +21,11 @@ namespace ProductUnitTests.Systems.Controllers
 
         public ProductTest_Delete()
         {
-            if (_mapper == null)
-            {
-                var mappingConfig = new MapperConfiguration(mc =>
-                {
-                    mc.AddProfile(new ProductProfile());
-                });
-                IMapper mapper = mappingConfig.CreateMapper();
-                _mapper = mapper;
-            }
+            MapperConfiguration mappingConfig = new(mc => mc.AddProfile(new ProductProfile()));
+            _mapper = mappingConfig.CreateMapper();
 
             _fakeProductsFixture = new FakeProductService();
-            _productsService = new FakeProductService();
+            _fakeProductsService = new FakeProductService();
             _productsController = new ProductsController(_mockProductService.Object, _mapper);
         }
 
@@ -44,7 +36,7 @@ namespace ProductUnitTests.Systems.Controllers
             Guid id = new("595823ca-aab8-4889-a6df-944f999b4270");
 
             _mockProductService.Setup(service => service.IsExistAsync(It.IsAny<Guid>()))
-                               .ReturnsAsync(await _productsService.IsExistAsync(id));
+                               .ReturnsAsync(await _fakeProductsService.IsExistAsync(id));
 
             // Act
             var result = (NoContentResult)await _productsController
@@ -52,6 +44,7 @@ namespace ProductUnitTests.Systems.Controllers
 
             // Assert
             result.Should().BeOfType<NoContentResult>();
+            result.StatusCode.Should().Be(204);
         }
 
         [Fact]
@@ -61,7 +54,7 @@ namespace ProductUnitTests.Systems.Controllers
             Guid id = Guid.NewGuid();
 
             _mockProductService.Setup(service => service.IsExistAsync(It.IsAny<Guid>()))
-                               .ReturnsAsync(await _productsService.IsExistAsync(id));
+                               .ReturnsAsync(await _fakeProductsService.IsExistAsync(id));
 
             // Act
             var result = (NotFoundResult)await _productsController
@@ -79,36 +72,15 @@ namespace ProductUnitTests.Systems.Controllers
             Guid id = new("595823ca-aab8-4889-a6df-944f999b4270");
 
             _mockProductService.Setup(service => service.IsExistAsync(It.IsAny<Guid>()))
-                               .ReturnsAsync(await _productsService.IsExistAsync(id));
+                               .ReturnsAsync(await _fakeProductsService.IsExistAsync(id));
 
             // Act
-            var result = (NoContentResult)await _productsController
+            var result = await _productsController
                 .DeleteAsync(id);
 
             // Assert
             _mockProductService.Verify(service => service.IsExistAsync(id),
                                                   Times.Once(),
-                                                  "Send was never invoked");
-        }
-
-        [Fact]
-        public async Task DeleteAsync_OnSuccess_VerifyDeleteAsync()
-        {
-            // Arrange
-            Guid id = new("595823ca-aab8-4889-a6df-944f999b4270");
-
-            _mockProductService.Setup(service => service.IsExistAsync(It.IsAny<Guid>()))
-                               .ReturnsAsync(await _productsService.IsExistAsync(id));
-
-            _mockProductService.Setup(service => service.DeleteAsync(id, _fakeProductsFixture.fakeProductsList[2]))
-                               .ReturnsAsync(await _productsService.DeleteAsync(id, _fakeProductsFixture.fakeProductsList[2]));
-
-            // Act
-            var result = await _productsController.DeleteAsync(id);
-
-            // Assert
-            _mockProductService.Verify(service => service.DeleteAsync(id, _fakeProductsFixture.fakeProductsList[2]),
-                                                  Times.Never,
                                                   "Send was never invoked");
         }
     }

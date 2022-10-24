@@ -8,7 +8,6 @@ using AutoMapper;
 using Services;
 using Xunit;
 using Moq;
-using ProductMicroservice.Controllers;
 
 namespace ProductUnitTests.Systems.Services
 {
@@ -23,16 +22,8 @@ namespace ProductUnitTests.Systems.Services
 
         public ProductTest_GetAll()
         {
-            if (_mapper == null)
-            {
-                var mappingConfig = new MapperConfiguration(mc =>
-                {
-                    mc.AddProfile(new ProductProfile());
-                });
-
-                IMapper mapper = mappingConfig.CreateMapper();
-                _mapper = mapper;
-            }
+            MapperConfiguration mappingConfig = new(mc => mc.AddProfile(new ProductProfile()));
+            _mapper = mappingConfig.CreateMapper();
 
             _fakeProductsRepository = new FakeRepositoryService();
             _productsService = new ProductsService(_mockProductRepository.Object, _mockMassTransit.Object, _mapper);

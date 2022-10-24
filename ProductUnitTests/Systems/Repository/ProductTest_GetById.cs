@@ -14,7 +14,7 @@ namespace ProductUnitTests.Systems.Services
     public class FakeProductService
     {
         private readonly IMapper _mapper;
-        private readonly IProductsRepository _productsRepository;
+        private readonly IProductsRepository _fakeProductsRepository;
         private readonly ProductsService _productsService;
 
         private readonly Mock<IProductsRepository> _mockProductRepository = new();
@@ -22,18 +22,10 @@ namespace ProductUnitTests.Systems.Services
 
         public FakeProductService()
         {
-            if (_mapper == null)
-            {
-                var mappingConfig = new MapperConfiguration(mc =>
-                {
-                    mc.AddProfile(new ProductProfile());
-                });
+            MapperConfiguration mappingConfig = new(mc => mc.AddProfile(new ProductProfile()));
+            _mapper = mappingConfig.CreateMapper();
 
-                IMapper mapper = mappingConfig.CreateMapper();
-                _mapper = mapper;
-            }
-
-            _productsRepository = new FakeRepositoryService();
+            _fakeProductsRepository = new FakeRepositoryService();
             _productsService = new ProductsService(_mockProductRepository.Object, _mockMassTransit.Object, _mapper);
         }
 
@@ -44,7 +36,7 @@ namespace ProductUnitTests.Systems.Services
             Guid productId = new("0bb24d7f-3532-4ca2-aed8-4da4675c7c37");
 
             _mockProductRepository.Setup(service => service.GetByIdAsync(productId))
-                               .ReturnsAsync(await _productsRepository.GetByIdAsync(productId));
+                               .ReturnsAsync(await _fakeProductsRepository.GetByIdAsync(productId));
 
             // Act
             var result = await _productsService.GetByIdAsync(productId);
@@ -60,7 +52,7 @@ namespace ProductUnitTests.Systems.Services
             Guid Id = new("0bb24d7f-3532-4ca2-aed8-4da4675c7c37");
 
             _mockProductRepository.Setup(service => service.GetByIdAsync(Id))
-                                  .ReturnsAsync(await _productsRepository.GetByIdAsync(Id));
+                                  .ReturnsAsync(await _fakeProductsRepository.GetByIdAsync(Id));
 
             // Act
             var result = await _productsService.GetByIdAsync(Id);
