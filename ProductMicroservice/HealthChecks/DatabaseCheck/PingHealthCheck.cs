@@ -1,10 +1,12 @@
 ﻿using Microsoft.Extensions.Diagnostics.HealthChecks;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.NetworkInformation;
 
 namespace AuthenticationMicroservice.HealthChecks.DatabaseCheck
 {
     public class PingHealthCheck : IHealthCheck
     {
+        [ExcludeFromCodeCoverage]
         public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, 
 														CancellationToken cancellationToken = default)
         {

@@ -30,7 +30,7 @@ namespace Repositories.Context
             modelBuilder.Entity<ProductEntity>().HasData(
                 new ProductEntity
                 {
-                    Id = Guid.NewGuid(),
+                    Id = new Guid("b1ee4d3c-99c6-4303-9cba-7241b09034ca"),
                     CreatedDate = DateTime.UtcNow,
                     Name = "Milk",
                     LinkImage = "https://craves.everybodyshops.com/wp-content/uploads/ThinkstockPhotos-535489242-1024x683@2x.jpg"

@@ -1,14 +1,16 @@
 ﻿using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Data.SqlClient;
+using System.Diagnostics.CodeAnalysis;
 
 namespace AuthenticationMicroservice.HealthChecks.DatabaseCheck
 {
     public class DatabaseHealthCheck : IHealthCheck
     {
         private readonly IConfiguration _configuration;
-
+        [ExcludeFromCodeCoverage]
         public DatabaseHealthCheck(IConfiguration configuration) => _configuration = configuration;
 
+        [ExcludeFromCodeCoverage]
         public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, 
                                                         CancellationToken cancellationToken = default)
         {
