@@ -12,7 +12,7 @@ namespace Repositories.Abstract
         Task<Guid> CreateAsync(ProductEntity product);
 
         // PUT
-        Task<string> UpdateAsync(Guid productId, ProductEntity product);
+        Task<string?> UpdateAsync(Guid productId, ProductEntity product);
 
         // DELETE
         Task<bool> DeleteAsync(ProductEntity product);

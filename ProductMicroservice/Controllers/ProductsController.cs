@@ -32,6 +32,7 @@ namespace ProductMicroservice.Controllers
                 return NotFound();
 
             var product = await _productsService.GetAllAsync();
+
             var productMap = _mapper.Map<List<ProductResponse>>(product);
 
             if(productMap.Any())
@@ -55,12 +56,12 @@ namespace ProductMicroservice.Controllers
             var product = await _productsService.GetByIdAsync(productId);
             var productMap = _mapper.Map<ProductResponse>(product);
 
-            if(productMap != null)
+            if(productMap == null || string.IsNullOrEmpty(productMap.Name))
             {
-                return Ok(productMap);
+                return NotFound();
             }
 
-            return NotFound();
+            return Ok(productMap);
         }
 
         [HttpPost]
@@ -68,8 +69,12 @@ namespace ProductMicroservice.Controllers
         [MapToApiVersion("1.0")]
         public async Task<ActionResult> CreateAsync(ProductModel product)
         {
-            if (string.IsNullOrEmpty(product.Name) || !ModelState.IsValid)
+            if (product == null 
+                || string.IsNullOrEmpty(product.Name) 
+                || !ModelState.IsValid)
+            {
                 return NotFound();
+            }  
 
             var productMap = _mapper.Map<ProductDto>(product);
 
@@ -90,9 +95,14 @@ namespace ProductMicroservice.Controllers
         {
             bool isExist = await _productsService.IsExistAsync(productId);
 
-            if (!isExist || string.IsNullOrEmpty(product.Name) || !ModelState.IsValid)
+            if (!isExist 
+                || product == null 
+                || string.IsNullOrEmpty(product.Name) 
+                || !ModelState.IsValid)
+            {
                 return NotFound();
-
+            }
+                
             var productMap = _mapper.Map<ProductDto>(product);
 
             await _productsService.UpdateAsync(productId, productMap);
@@ -112,7 +122,10 @@ namespace ProductMicroservice.Controllers
 
             Task<ProductDto> productToDelete = _productsService.GetByIdAsync(productId)!;
 
-            await _productsService.DeleteAsync(productId, await productToDelete);
+            bool isDeleted = await _productsService.DeleteAsync(productId, await productToDelete);
+
+            if (!isDeleted)
+                return NotFound();
 
             return NoContent();
         }

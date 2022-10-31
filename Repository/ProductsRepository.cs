@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Repositories.Abstract;
-using Repositories.Context;
 using Repositories.Entities;
+using Repositories.Context;
 
 namespace Repositories
 {
@@ -44,12 +44,12 @@ namespace Repositories
         }
 
         // PUT
-        public async Task<string> UpdateAsync(Guid productId, ProductEntity product)
+        public async Task<string?> UpdateAsync(Guid productId, ProductEntity product)
         {
             var currentProduct = await _context.Products.Where(p => p.Id.Equals(productId))
                                                         .FirstOrDefaultAsync();
 
-            string productName = currentProduct.Name;
+            string? productName = currentProduct!.Name;
 
             currentProduct.LinkImage = product.LinkImage;
             currentProduct.Name = product.Name;
