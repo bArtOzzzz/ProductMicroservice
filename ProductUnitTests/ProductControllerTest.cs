@@ -13,7 +13,7 @@ using Moq;
 
 namespace ProductUnitTests
 {
-    public class ProductController_xUnit
+    public class ProductUnitTests
     {
         protected readonly IMapper _mapper;
 
@@ -21,12 +21,12 @@ namespace ProductUnitTests
 
         protected readonly Mock<IProductsService> _mockProductsService;
 
-        protected ProductsController _productController;
+        protected readonly ProductsController _productController;
 
         protected List<ProductDto> _productDtoListFixture;
         protected ProductModel _productModelFixture;
 
-        public ProductController_xUnit()
+        public ProductUnitTests()
         {
             MapperConfiguration mappingConfig = new(mc => mc.AddProfile(new ProductProfile()));
             _mapper = mappingConfig.CreateMapper();
@@ -99,6 +99,8 @@ namespace ProductUnitTests
         protected async Task GetByIdAsync_OnSuccess_Return_Ok()
         {
             // Arrange
+            var expectedProduct = _mapper.Map<ProductResponse>(_productDtoListFixture[0]);
+
             _mockProductsService.Setup(config => config.IsExistAsync(It.IsAny<Guid>()))
                                 .ReturnsAsync(true);
 
@@ -110,6 +112,7 @@ namespace ProductUnitTests
 
             // Assert
             result.Value.Should().BeOfType<ProductResponse>();
+            result.Value.Should().BeEquivalentTo(expectedProduct);
             result.Should().BeOfType<OkObjectResult>();
 
             _mockProductsService.Verify(p => p.IsExistAsync(It.IsAny<Guid>()), Times.Once);
@@ -117,8 +120,8 @@ namespace ProductUnitTests
         }
 
         [Fact]
-        protected async Task GetByIdAsync_WhenIsNotExist_Return_NotFoundResult()
-        {
+        protected async Task GetByIdAsync_WhenProductIsNotExist_Return_NotFoundResult()
+        {   
             // Arrange
             _mockProductsService.Setup(config => config.IsExistAsync(It.IsAny<Guid>()))
                                 .ReturnsAsync(false);
@@ -134,10 +137,10 @@ namespace ProductUnitTests
         }
 
         [Fact]
-        protected async Task GetByIdAsync_WhenNull_Return_NotFoundResult()
+        protected async Task GetByIdAsync_WhenProductIsNull_Return_NotFoundResult()
         {
             // Arrange
-            _productDtoListFixture[0] = null!;
+            _productDtoListFixture[0] = null!;  
 
             _mockProductsService.Setup(config => config.IsExistAsync(It.IsAny<Guid>()))
                                 .ReturnsAsync(true);
@@ -156,8 +159,8 @@ namespace ProductUnitTests
         }
 
         [Fact]
-        protected async Task GetByIdAsync_WhenEmpty_Return_NotFoundResult()
-        {
+        protected async Task GetByIdAsync_WhenProductIsEmpty_Return_NotFoundResult()
+        {   
             // Arrange
             _mockProductsService.Setup(config => config.GetByIdAsync(It.IsAny<Guid>()))
                                 .ReturnsAsync(new ProductDto());
@@ -180,6 +183,8 @@ namespace ProductUnitTests
         protected async Task CreateAsync_OnSuccess_Return_CreatedAtActionResult()
         {
             // Arrange
+            var expectedProduct = _mapper.Map<ProductModel>(_productModelFixture);
+
             _mockProductsService.Setup(config => config.CreateAsync(It.IsAny<ProductDto>()))
                                 .ReturnsAsync(_productDtoListFixture[0].Id);
 
@@ -188,13 +193,14 @@ namespace ProductUnitTests
 
             // Assert
             result.Value.Should().BeOfType<ProductModel>();
+            result.Value.Should().BeEquivalentTo(expectedProduct);
             result.Should().BeOfType<CreatedAtRouteResult>();
 
             _mockProductsService.Verify(p => p.CreateAsync(It.IsAny<ProductDto>()), Times.Once);
         }
 
         [Fact]
-        protected async Task CreateAsync_WhenNull_Return_NotFoundResult()
+        protected async Task CreateAsync_WhenProductIsNull_Return_NotFoundResult()
         {
             // Arrange
             ProductModel productModel = null!;
@@ -209,7 +215,7 @@ namespace ProductUnitTests
         }
 
         [Fact]
-        protected async Task CreateAsync_WhenEmpty_Return_NotFoundResult()
+        protected async Task CreateAsync_WhenProductIsEmpty_Return_NotFoundResult()
         {
             // Act
             var result = await _productController.CreateAsync(new ProductModel());
@@ -221,8 +227,8 @@ namespace ProductUnitTests
         }
 
         [Fact]
-        protected async Task CreateAsync_WhenException_Return_NullReferenceException()
-        {
+        protected async Task CreateAsync_WhenServiceGetException_Return_NullReferenceException()
+        {   
             // Arrange
             _mockProductsService.Setup(config => config.CreateAsync(It.IsAny<ProductDto>()))
                                 .ThrowsAsync(new NullReferenceException());
@@ -260,7 +266,7 @@ namespace ProductUnitTests
         }
 
         [Fact]
-        protected async Task UpdateAsync_WhenNull_Return_NotFoundResult()
+        protected async Task UpdateAsync_WhenProductIsNull_Return_NotFoundResult()
         {
             // Arrange
             ProductModel productModel = null!;
@@ -279,7 +285,7 @@ namespace ProductUnitTests
         }
 
         [Fact]
-        protected async Task UpdateAsync_WhenEmpty_Return_NotFoundResult()
+        protected async Task UpdateAsync_WhenProductIsEmpty_Return_NotFoundResult()
         {
             // Arrange
             _mockProductsService.Setup(config => config.IsExistAsync(It.IsAny<Guid>()))
@@ -296,7 +302,7 @@ namespace ProductUnitTests
         }
 
         [Fact]
-        protected async Task UpdateAsync_WhenException_Return_NullReferenceException()
+        protected async Task UpdateAsync_WhenServiceGetException_Return_NullReferenceException()
         {
             // Arrange
             _mockProductsService.Setup(config => config.IsExistAsync(It.IsAny<Guid>()))
@@ -337,7 +343,7 @@ namespace ProductUnitTests
         }
 
         [Fact]
-        protected async Task DeleteAsync_WhenNull_Return_NotFoundResult()
+        protected async Task DeleteAsync_WhenProductIsNull_Return_NotFoundResult()
         {
             // Arrange
             _mockProductsService.Setup(config => config.IsExistAsync(It.IsAny<Guid>()))
@@ -354,7 +360,7 @@ namespace ProductUnitTests
         }
 
         [Fact]
-        protected async Task DeleteAsync_WhenException_Return_NullReferenceException()
+        protected async Task DeleteAsync_WhenServiceGetException_Return_NullReferenceException()
         {
             // Arrange
             _mockProductsService.Setup(config => config.IsExistAsync(It.IsAny<Guid>()))

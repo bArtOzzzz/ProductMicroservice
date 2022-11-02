@@ -13,8 +13,8 @@ namespace ProductMicroservice.Controllers
     [ApiVersion("1.0")]
     public class ProductsController : Controller
     {
-        private readonly IProductsService _productsService;
-        private readonly IMapper _mapper;
+        protected readonly IProductsService _productsService;
+        protected readonly IMapper _mapper;
 
         public ProductsController(IProductsService productsService,
                                   IMapper mapper)
@@ -43,7 +43,7 @@ namespace ProductMicroservice.Controllers
             return NotFound();
         }
 
-        [HttpGet("{productId}", Name = "GetByIdAsync")]
+        [HttpGet("{productId}", Name = nameof(GetByIdAsync))]
         [Authorize(Roles = "Administrator")]
         [MapToApiVersion("1.0")]
         public async Task<ActionResult> GetByIdAsync(Guid productId)
@@ -85,7 +85,7 @@ namespace ProductMicroservice.Controllers
             else
                 return NotFound();
 
-            return CreatedAtRoute("GetByIdAsync", new { id = productId }, product);
+            return CreatedAtRoute(nameof(GetByIdAsync), new {productId}, product);
         }
 
         [HttpPut("{productId}")]

@@ -23,19 +23,19 @@ namespace ProductUnitTests
 
         //___________________________________Get_All_Async___________________________________
         [Fact]
-        protected async Task GetAllAsync_OnSuccess_ReturnSuccess()
+        protected async Task GetAllAsync_OnSuccess_Return_Success()
         {
             // Act
             var result = await _productsRepository.GetAllAsync();
 
             // Assert
-            result.Should().BeOfType<List<ProductEntity>>()
-                .And.HaveCount(5);
+            result.Should().BeOfType<List<ProductEntity>>();
+            result.Should().HaveCount(5);
         }
 
         //___________________________________Get_By_Id_Async_________________________________
         [Fact]
-        protected async Task GetByIdAsync_OnSuccess_ReturnSuccess()
+        protected async Task GetByIdAsync_OnSuccess_Return_Success()
         {
             // Arrange
             var Id = new Guid("b1ee4d3c-99c6-4303-9cba-7241b09034ca");
@@ -50,7 +50,7 @@ namespace ProductUnitTests
 
         //___________________________________Create_Async____________________________________
         [Fact]
-        protected async Task CreateAsync_OnSuccess_ReturnSuccess()
+        protected async Task CreateAsync_OnSuccess_Return_Success()
         {
             // Arrange
             var productEntity = new ProductEntity
@@ -70,7 +70,7 @@ namespace ProductUnitTests
 
         //___________________________________Update_Async_____________________________________
         [Fact]
-        protected async Task UpdateAsync_OnSuccess_ReturnSuccess()
+        protected async Task UpdateAsync_OnSuccess_Return_Success()
         {
             // Arrange
             var productEntity = new ProductEntity
@@ -85,13 +85,13 @@ namespace ProductUnitTests
             var result = await _productsRepository.UpdateAsync(productEntity.Id, productEntity);
 
             // Assert
-            result.Should().BeOfType<string>()
-                .And.NotBeEmpty();
+            result.Should().NotBeEmpty();
+            result.Should().BeOfType<string>();
         }
 
         //___________________________________Delete_Async____________________________________
         [Fact]
-        protected async Task DeleteAsync_OnSuccess_ReturnSuccess()
+        protected async Task DeleteAsync_OnSuccess_Return_Success()
         {
             // Arrange
             var productEntity = new ProductEntity
@@ -110,7 +110,7 @@ namespace ProductUnitTests
         }
 
         [Fact]
-        protected async Task WhenException_Return_NullReferenceException()
+        protected async Task DeleteAsync_WhenGetNull_Return_NullReferenceException()
         {
             // AAA
             await _productsRepository.Invoking(y => y.UpdateAsync(It.IsAny<Guid>(), null!))
