@@ -17,7 +17,7 @@ namespace ProductUnitTests
     {
         protected readonly IMapper _mapper;
 
-        protected readonly Fixture _fixture = new Fixture();
+        protected readonly Fixture _fixture = new();
 
         protected readonly Mock<IProductsService> _mockProductsService;
 

@@ -45,7 +45,7 @@ namespace ProductUnitTests
 
             // Assert
             result.Should().BeOfType<ProductEntity>();
-            result.Name.Should().Be("Milk");
+            result!.Name.Should().Be("Milk");
         }
 
         //___________________________________Create_Async____________________________________

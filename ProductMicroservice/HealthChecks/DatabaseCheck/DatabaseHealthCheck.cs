@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Data.SqlClient;
 
 namespace AuthenticationMicroservice.HealthChecks.DatabaseCheck
 {
