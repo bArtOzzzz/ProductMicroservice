@@ -29,8 +29,14 @@ builder.Services.AddFluentValidation(x =>
 });
 #pragma warning restore CS0618
 
-// Add Masstransit && RabbitMQ
-builder.Services.AddMassTransit(x => x.UsingRabbitMq());
+// Add Masstransit && RabbitMQ && Azure Service Bus
+builder.Services.AddMassTransit(x =>
+{
+    if(builder.Environment.IsDevelopment())
+        x.UsingRabbitMq((context, cfg) => cfg.ConfigureEndpoints(context));
+    else
+        x.UsingAzureServiceBus((context, cfg) => cfg.ConfigureEndpoints(context));
+});
 
 // Add services to the container.
 builder.Services.AddControllers()
@@ -117,7 +123,6 @@ builder.Services.AddVersionedApiExplorer(config =>
     config.GroupNameFormat = "'v'VVV";
     config.SubstituteApiVersionInUrl = true;
 });
-
 
 var app = builder.Build();
 
