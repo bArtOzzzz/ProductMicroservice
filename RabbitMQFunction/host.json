@@ -4,8 +4,7 @@
     "rabbitMQ": {
       "prefetchCount": 100,
       "queueName": "queue",
-      "connectionString": "amqp://user:password@url:port",
-      "port": 10
+      "connectionString": "amqp://guest:guest@localhost:5672"
     },
     "logging": {
       "applicationInsights": {
@@ -16,3 +15,4 @@
       }
     }
   }
+ }
