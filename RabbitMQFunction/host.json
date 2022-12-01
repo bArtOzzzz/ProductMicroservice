@@ -3,7 +3,7 @@
   "extensions": {
     "rabbitMQ": {
       "prefetchCount": 100,
-      "queueName": "queue",
+      "queueName": "RabbitMqListener",
       "connectionString": "amqp://guest:guest@localhost:5672"
     },
     "logging": {

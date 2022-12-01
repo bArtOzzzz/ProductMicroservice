@@ -1,5 +1,5 @@
-﻿using Microsoft.Azure.WebJobs;
-using System;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Azure.WebJobs;
 
 namespace Functions
 {
@@ -7,9 +7,9 @@ namespace Functions
     {
         [FunctionName("RabbitMQTriggerCSharp")]
         public static void RabbitMQTrigger_BasicDeliverEventArgs(
-        [RabbitMQTrigger("queueName", ConnectionStringSetting = "connectionString")] string message)
+        [RabbitMQTrigger("RabbitMqListener", ConnectionStringSetting = "connectionString")] string message, ILogger logger)
         {
-            Console.WriteLine($"C# RabbitMQ queue trigger function processed message: {message}");
+            logger.LogInformation($"RabbitMQ queue trigger function processed message: {message}");
         }
     }
 }
