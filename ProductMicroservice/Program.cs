@@ -2,7 +2,9 @@ using AuthenticationMicroservice.HealthChecks.DatabaseCheck;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Mvc.Versioning;
+using ProductMicroservice.Models.Request;
 using Azure.Security.KeyVault.Secrets;
+using ProductMicroservice.Validation;
 using Microsoft.IdentityModel.Tokens;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +15,7 @@ using HealthChecks.UI.Client;
 using Repositories.Abstract;
 using Repositories.Context;
 using Services.Abstract;
+using FluentValidation;
 using Azure.Identity;
 using Repositories;
 using System.Text;
@@ -20,6 +23,15 @@ using MassTransit;
 using Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add Masstransit && RabbitMQ && Azure Service Bus
+builder.Services.AddMassTransit(x =>
+{
+    if (builder.Environment.IsDevelopment())
+        x.UsingRabbitMq((context, cfg) => cfg.ConfigureEndpoints(context));
+    else
+        x.UsingAzureServiceBus((context, cfg) => cfg.ConfigureEndpoints(context));
+});
 
 // Key Vault URL
 Environment.SetEnvironmentVariable("KVUrl", "https://applicationkv.vault.azure.net/");
@@ -44,37 +56,19 @@ var clientJwt = new SecretClient(new Uri(Environment.GetEnvironmentVariable("KVU
                                                             Environment.GetEnvironmentVariable("ClientId"),
                                                             Environment.GetEnvironmentVariable("ClientSecretIdJwt")));
 
-// Add Fluent Validation
-#pragma warning disable CS0618
-builder.Services.AddFluentValidation(x =>
+// Add services to the container
+builder.Services.AddControllers().AddJsonOptions(options =>
 {
-    x.ImplicitlyValidateChildProperties = true;
-    x.ImplicitlyValidateRootCollectionElements = true;
-    x.RegisterValidatorsFromAssemblies(AppDomain.CurrentDomain.GetAssemblies());
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 });
-#pragma warning restore CS0618
-
-// Add Masstransit && RabbitMQ && Azure Service Bus
-builder.Services.AddMassTransit(x =>
-{
-    if(builder.Environment.IsDevelopment())
-        x.UsingRabbitMq((context, cfg) => cfg.ConfigureEndpoints(context));
-    else
-        x.UsingAzureServiceBus((context, cfg) => cfg.ConfigureEndpoints(context));
-});
-
-// Add services to the container.
-builder.Services.AddControllers()
-                .AddJsonOptions(options =>
-                {
-                    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-                });
 
 // Enable AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));
 
 builder.Services.AddScoped<IProductsRepository, ProductsRepository>();
 builder.Services.AddScoped<IProductsService, ProductsService>();
+
+builder.Services.AddScoped<IValidator<ProductModel>, ProductModelValidator>();
 
 builder.Services.AddEndpointsApiExplorer();
 
@@ -88,23 +82,26 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// Add JWT Authentication
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
-                {
-                    options.TokenValidationParameters = new TokenValidationParameters()
-                    {
-                        ValidateAudience = true,
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true,
-                        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-                        ValidAudience = builder.Configuration["Jwt:Audience"],
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(clientJwt.GetSecret("Jwt-Secret").Value.Value)),
-                        ClockSkew = TimeSpan.Zero
-                    };
-                });
+// Add Fluent Validation
+builder.Services.AddFluentValidationClientsideAdapters();
 
-// Add connection to the database
+// Add JWT Bearer validation for Authentication
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters()
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(clientJwt.GetSecret("Jwt-Secret").Value.Value)),
+        ClockSkew = TimeSpan.Zero
+    };
+});
+
+// Add connection to the databases
 builder.Services.AddDbContext<DataContext>(options =>
 {
     // Azure connection
@@ -171,18 +168,6 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
-
-app.Use(async (context, next) =>
-{
-    if (!context.User.Identity?.IsAuthenticated ?? false)
-    {
-        context.Response.StatusCode = 401;
-        await context.Response.WriteAsync("Not Authenticated");
-    }
-    else await next();
-});
-
-//app.UseAuthorization();
 
 app.MapControllers();
 
