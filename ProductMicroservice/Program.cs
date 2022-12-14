@@ -2,6 +2,7 @@ using AuthenticationMicroservice.HealthChecks.DatabaseCheck;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Mvc.Versioning;
+using Azure.Security.KeyVault.Secrets;
 using Microsoft.IdentityModel.Tokens;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
@@ -12,12 +13,36 @@ using HealthChecks.UI.Client;
 using Repositories.Abstract;
 using Repositories.Context;
 using Services.Abstract;
+using Azure.Identity;
 using Repositories;
 using System.Text;
 using MassTransit;
 using Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Key Vault URL
+Environment.SetEnvironmentVariable("KVUrl", "https://applicationkv.vault.azure.net/");
+
+// Database secret connection variables
+Environment.SetEnvironmentVariable("TenantId", "b15d7df0-4a92-49e8-b851-b857d77abe6d");
+Environment.SetEnvironmentVariable("ClientId", "5ac2fa80-c5b0-4959-8411-ad70a93694d6");
+Environment.SetEnvironmentVariable("ClientSecretIdDbConnection", "zXc8Q~rIHIvH.85jBFL5LbtrimP3maTjZPAlOagY");
+
+// JWT secret connection variables
+Environment.SetEnvironmentVariable("ClientSecretIdJwt", "rnt8Q~_2L3fIqUenGHJ-tJrtHehzgHPXRcE3Ia_A");
+
+// Connection to Azure Key Vaulte Database connection
+var clientDatabase = new SecretClient(new Uri(Environment.GetEnvironmentVariable("KVUrl")!),
+                                      new ClientSecretCredential(Environment.GetEnvironmentVariable("TenantId"),
+                                                                 Environment.GetEnvironmentVariable("ClientId"),
+                                                                 Environment.GetEnvironmentVariable("ClientSecretIdDbConnection")));
+
+// Connection to Azure Key Vaulte Jwt
+var clientJwt = new SecretClient(new Uri(Environment.GetEnvironmentVariable("KVUrl")!),
+                                 new ClientSecretCredential(Environment.GetEnvironmentVariable("TenantId"),
+                                                            Environment.GetEnvironmentVariable("ClientId"),
+                                                            Environment.GetEnvironmentVariable("ClientSecretIdJwt")));
 
 // Add Fluent Validation
 #pragma warning disable CS0618
@@ -69,13 +94,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 {
                     options.TokenValidationParameters = new TokenValidationParameters()
                     {
-                        ValidateActor = true,
                         ValidateAudience = true,
                         ValidateLifetime = true,
                         ValidateIssuerSigningKey = true,
                         ValidIssuer = builder.Configuration["Jwt:Issuer"],
                         ValidAudience = builder.Configuration["Jwt:Audience"],
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(clientJwt.GetSecret("Jwt-Secret").Value.Value)),
                         ClockSkew = TimeSpan.Zero
                     };
                 });
@@ -83,9 +107,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // Add connection to the database
 builder.Services.AddDbContext<DataContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration
-           .GetConnectionString("DefaultConnection"), b => b
-           .MigrationsAssembly("ProductMicroservice"));
+    // Azure connection
+    options.UseSqlServer(clientDatabase.GetSecret("ConnectionString-ProductConnection").Value.Value);
+
+    // Local connection
+    //options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly("ProductMicroservice"));
 });
 
 // Add Healthcheck
@@ -99,7 +125,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowSpecificOrigins", config =>
     {
         config.SetIsOriginAllowedToAllowWildcardSubdomains()
-              .WithOrigins("http://localhost:5000", "https://localhost:5001")
+              .WithOrigins("http://localhost:4200", "https://applicationclient.azurewebsites.net")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials()
@@ -139,15 +165,24 @@ app.MapHealthChecks("/health", new HealthCheckOptions()
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(c => c
-       .SwaggerEndpoint("/swagger/v1/swagger.json", "ProductMicroservice v1"));
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ProductMicroservice v1"));
 }
 
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
 
-app.UseAuthorization();
+app.Use(async (context, next) =>
+{
+    if (!context.User.Identity?.IsAuthenticated ?? false)
+    {
+        context.Response.StatusCode = 401;
+        await context.Response.WriteAsync("Not Authenticated");
+    }
+    else await next();
+});
+
+//app.UseAuthorization();
 
 app.MapControllers();
 

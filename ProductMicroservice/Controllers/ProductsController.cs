@@ -65,7 +65,7 @@ namespace ProductMicroservice.Controllers
         }
 
         [HttpPost]
-        //[Authorize(Roles = "Administrator")]
+        [Authorize(Roles = "Administrator")]
         [MapToApiVersion("1.0")]
         public async Task<ActionResult> CreateAsync(ProductModel product)
         {
