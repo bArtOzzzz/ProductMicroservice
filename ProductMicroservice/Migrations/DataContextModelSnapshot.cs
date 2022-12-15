@@ -35,49 +35,49 @@ namespace ProductMicroservice.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("Name")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[Name] IS NOT NULL");
 
                     b.ToTable("Products");
 
                     b.HasData(
                         new
                         {
-                            Id = new Guid("96069b0b-b9ff-491d-8f8c-bdf159753e0c"),
-                            CreatedDate = new DateTime(2022, 10, 14, 7, 15, 18, 885, DateTimeKind.Utc).AddTicks(6473),
+                            Id = new Guid("ab8a02d5-95d2-4c7b-b1e8-d70a048d98e2"),
+                            CreatedDate = new DateTime(2022, 12, 15, 9, 11, 18, 515, DateTimeKind.Utc).AddTicks(7243),
                             LinkImage = "https://craves.everybodyshops.com/wp-content/uploads/ThinkstockPhotos-535489242-1024x683@2x.jpg",
                             Name = "Milk"
                         },
                         new
                         {
-                            Id = new Guid("02f0ccb6-bff0-4b77-a1a5-1c6e331bb89b"),
-                            CreatedDate = new DateTime(2022, 10, 14, 7, 15, 18, 885, DateTimeKind.Utc).AddTicks(6482),
+                            Id = new Guid("4dabfde6-b155-4e93-a510-c8fdd502ef83"),
+                            CreatedDate = new DateTime(2022, 12, 15, 9, 11, 18, 515, DateTimeKind.Utc).AddTicks(7249),
                             LinkImage = "https://www.expatica.com/app/uploads/sites/2/2014/05/bread.jpg",
                             Name = "Bread"
                         },
                         new
                         {
-                            Id = new Guid("8bac0be8-4af8-475a-b1eb-99bca1cc9b5f"),
-                            CreatedDate = new DateTime(2022, 10, 14, 7, 15, 18, 885, DateTimeKind.Utc).AddTicks(6483),
+                            Id = new Guid("67784688-8ca1-4e6a-a773-2831db0e16dc"),
+                            CreatedDate = new DateTime(2022, 12, 15, 9, 11, 18, 515, DateTimeKind.Utc).AddTicks(7250),
                             LinkImage = "https://images5.alphacoders.com/102/1022723.jpg",
                             Name = "Juice"
                         },
                         new
                         {
-                            Id = new Guid("a9ba8e48-cd41-4b8d-acd0-fb8d257b24bc"),
-                            CreatedDate = new DateTime(2022, 10, 14, 7, 15, 18, 885, DateTimeKind.Utc).AddTicks(6484),
+                            Id = new Guid("62e23a7a-b659-4a9f-a417-3355ae4b1d80"),
+                            CreatedDate = new DateTime(2022, 12, 15, 9, 11, 18, 515, DateTimeKind.Utc).AddTicks(7251),
                             LinkImage = "https://pm1.narvii.com/6810/05dbd7aaebf3454313b99edfd566b06356a59be3v2_hq.jpg",
                             Name = "Cheese"
                         },
                         new
                         {
-                            Id = new Guid("67408836-035b-4fe3-b877-991a8d2f3560"),
-                            CreatedDate = new DateTime(2022, 10, 14, 7, 15, 18, 885, DateTimeKind.Utc).AddTicks(6485),
+                            Id = new Guid("aed0c7d8-18ed-4945-9d8b-cc3a0e7a92be"),
+                            CreatedDate = new DateTime(2022, 12, 15, 9, 11, 18, 515, DateTimeKind.Utc).AddTicks(7252),
                             LinkImage = "https://g.foolcdn.com/image/?url=https%3A//g.foolcdn.com/editorial/images/218648/eggs-brown-getty_BSCxkDW.jpg&w=2000&op=resize",
                             Name = "Egg"
                         });

@@ -105,7 +105,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 builder.Services.AddDbContext<DataContext>(options =>
 {
     // Azure connection
-    options.UseSqlServer(clientDatabase.GetSecret("ConnectionString-ProductConnection").Value.Value);
+    options.UseSqlServer(clientDatabase.GetSecret("ConnectionString-ProductConnection").Value.Value, b => b.MigrationsAssembly("ProductMicroservice"));
 
     // Local connection
     //options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly("ProductMicroservice"));
@@ -168,6 +168,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 
