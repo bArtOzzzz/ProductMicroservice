@@ -25,13 +25,13 @@ using Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add Masstransit && RabbitMQ && Azure Service Bus
-builder.Services.AddMassTransit(x =>
+/*builder.Services.AddMassTransit(x =>
 {
     if (builder.Environment.IsDevelopment())
         x.UsingRabbitMq((context, cfg) => cfg.ConfigureEndpoints(context));
     else
         x.UsingAzureServiceBus((context, cfg) => cfg.ConfigureEndpoints(context));
-});
+});*/
 
 // Key Vault URL
 Environment.SetEnvironmentVariable("KVUrl", "https://applicationkv.vault.azure.net/");
@@ -73,12 +73,35 @@ builder.Services.AddScoped<IValidator<ProductModel>, ProductModelValidator>();
 builder.Services.AddEndpointsApiExplorer();
 
 // Add Versioning for swagger
-builder.Services.AddSwaggerGen(c =>
+builder.Services.AddSwaggerGen(options =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo
+    options.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "ProductMicroservice",
         Version = "v1"
+    });
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Name = "Authorization",
+        Description = "Bearer Authentication with JWT Token",
+        Type = SecuritySchemeType.Http
+    });
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Id = "Bearer",
+                    Type = ReferenceType.SecurityScheme
+                }
+            },
+            new List<string>()
+        }
     });
 });
 

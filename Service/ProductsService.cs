@@ -10,15 +10,15 @@ namespace Services
     public class ProductsService : IProductsService
     {
         private readonly IProductsRepository _productsRepository;
-        private readonly IPublishEndpoint _publishEndpoint;
+        //private readonly IPublishEndpoint _publishEndpoint;
         private readonly IMapper _mapper;
 
         public ProductsService(IProductsRepository productsRepository,
-                               IPublishEndpoint publishEndpoint,
+                               //IPublishEndpoint publishEndpoint,
                                IMapper mapper)
         {
             _productsRepository = productsRepository;
-            _publishEndpoint = publishEndpoint;
+            //_publishEndpoint = publishEndpoint;
             _mapper = mapper;
         }
 
@@ -47,7 +47,7 @@ namespace Services
             product.CrudOperationsInfo = CrudOperationsInfo.Create;
             product.CreatedDate = DateTime.UtcNow;
 
-            await _publishEndpoint.Publish(product);
+            //await _publishEndpoint.Publish(product);
 
             return productMap.Id;
         }
@@ -59,7 +59,7 @@ namespace Services
 
             product.CrudOperationsInfo = CrudOperationsInfo.Update;
             product.PreviousName = await _productsRepository.UpdateAsync(productId, productMap);
-            await _publishEndpoint.Publish(product);
+            //await _publishEndpoint.Publish(product);
 
             return product.PreviousName;
         }
@@ -74,7 +74,7 @@ namespace Services
             await _productsRepository.DeleteAsync(productMap);
 
             product.CrudOperationsInfo = CrudOperationsInfo.Delete;
-            await _publishEndpoint.Publish(product);
+            //await _publishEndpoint.Publish(product);
 
             return true;
         }
