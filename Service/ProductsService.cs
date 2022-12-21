@@ -10,14 +10,23 @@ namespace Services
     public class ProductsService : IProductsService
     {
         private readonly IProductsRepository _productsRepository;
-        //private readonly IPublishEndpoint _publishEndpoint;
         private readonly IMapper _mapper;
+        
+        // Azure Queue
+        private readonly ISendEndpointProvider _sendEndpointProvider;
+
+        // For Rabbit MQ && Azure topics
+        //private readonly IPublishEndpoint _publishEndpoint;
+
+        // For Azure Service Bus Queue without function (triggers)
 
         public ProductsService(IProductsRepository productsRepository,
+                               ISendEndpointProvider sendEndpointProvider,
                                //IPublishEndpoint publishEndpoint,
                                IMapper mapper)
         {
             _productsRepository = productsRepository;
+            _sendEndpointProvider = sendEndpointProvider;
             //_publishEndpoint = publishEndpoint;
             _mapper = mapper;
         }
@@ -42,11 +51,18 @@ namespace Services
         {
             var productMap = _mapper.Map<ProductEntity>(product);
 
-            await _productsRepository.CreateAsync(productMap);
+            //await _productsRepository.CreateAsync(productMap);
 
             product.CrudOperationsInfo = CrudOperationsInfo.Create;
             product.CreatedDate = DateTime.UtcNow;
 
+            // Azure Service Bus Queue
+            var sendEndpoint = await _sendEndpointProvider.GetSendEndpoint(new Uri("sb://fridgeproduct.servicebus.windows.net/create-product-queue"));
+            await sendEndpoint.Send(product);
+
+            //await _productAzureQueuePublisherToQueue.Publish(product);
+
+            // RabbitMq && Azure topics
             //await _publishEndpoint.Publish(product);
 
             return productMap.Id;

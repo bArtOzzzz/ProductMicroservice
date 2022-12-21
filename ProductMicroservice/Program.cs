@@ -21,17 +21,54 @@ using Repositories;
 using System.Text;
 using MassTransit;
 using Services;
+using Microsoft.Azure.ServiceBus;
+using Services.Dto;
+using MassTransit.Transports;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add Masstransit && RabbitMQ && Azure Service Bus
-/*builder.Services.AddMassTransit(x =>
+// Configuration for azure service bus TOPIC
+/*var azureServiceBus = Bus.Factory.CreateUsingAzureServiceBus(busFactoryConfig =>
 {
-    if (builder.Environment.IsDevelopment())
-        x.UsingRabbitMq((context, cfg) => cfg.ConfigureEndpoints(context));
-    else
-        x.UsingAzureServiceBus((context, cfg) => cfg.ConfigureEndpoints(context));
+    busFactoryConfig.Host(builder.Configuration["ServiceBus:ConnectionString"]);
+
+    // specify the message Purchase to be sent to a specific topic
+    busFactoryConfig.Message<ProductDto>(configTopology =>
+    {
+        configTopology.SetEntityName(builder.Configuration["ServiceBus:TopicName"]);
+    });
+
 });*/
+
+// Configuration for azure service bus QUEUE
+var azureServiceBus = Bus.Factory.CreateUsingAzureServiceBus(busFactoryConfig =>
+{
+    busFactoryConfig.Host(builder.Configuration["ServiceBus:ConnectionString"]);
+
+    // specify the message of Order object to be sent to a specific queue
+    busFactoryConfig.Message<ProductDto>(configTopology =>
+    {
+        configTopology.SetEntityName(builder.Configuration["ServiceBus:QueueName"]);
+    });
+});
+
+// Add Masstransit && RabbitMQ && Azure Service Bus
+builder.Services.AddMassTransit(x =>
+{
+    if (!builder.Environment.IsDevelopment())
+    {
+        Console.WriteLine("Azure Bus Started");
+
+        x.UsingRabbitMq((context, cfg) => cfg.ConfigureEndpoints(context));
+    }
+    else
+    {
+        Console.WriteLine("Azure Bus Started");
+
+        // Azure Service Bus Configuration
+        x.AddBus(provider => azureServiceBus);
+    }
+});
 
 // Key Vault URL
 Environment.SetEnvironmentVariable("KVUrl", "https://applicationkv.vault.azure.net/");
@@ -69,6 +106,10 @@ builder.Services.AddScoped<IProductsRepository, ProductsRepository>();
 builder.Services.AddScoped<IProductsService, ProductsService>();
 
 builder.Services.AddScoped<IValidator<ProductModel>, ProductModelValidator>();
+
+// Azure 
+builder.Services.AddSingleton<IPublishEndpoint>(azureServiceBus);
+builder.Services.AddSingleton<IBus>(azureServiceBus);
 
 builder.Services.AddEndpointsApiExplorer();
 
