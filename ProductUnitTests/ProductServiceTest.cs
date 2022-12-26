@@ -20,6 +20,7 @@ namespace ProductUnitTests
 
         protected readonly Mock<IProductsRepository> _mockProductsRepository;
         protected readonly Mock<IPublishEndpoint> _mockPublishEndpoint;
+        protected readonly Mock<ISendEndpointProvider> _mockSendEndpointProvider;
 
         protected readonly ProductsService _productsService;
 
@@ -38,8 +39,9 @@ namespace ProductUnitTests
 
             _mockProductsRepository = new Mock<IProductsRepository>();
             _mockPublishEndpoint = new Mock<IPublishEndpoint>();
+            _mockSendEndpointProvider = new Mock<ISendEndpointProvider>();
 
-            _productsService = new ProductsService(_mockProductsRepository.Object, _mockPublishEndpoint.Object, _mapper);
+            _productsService = new ProductsService(_mockProductsRepository.Object, _mockSendEndpointProvider.Object, _mockPublishEndpoint.Object, _mapper);
         }
 
         //___________________________________Get_All_Async___________________________________

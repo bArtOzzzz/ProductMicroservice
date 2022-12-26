@@ -21,24 +21,9 @@ using Repositories;
 using System.Text;
 using MassTransit;
 using Services;
-using Microsoft.Azure.ServiceBus;
 using Services.Dto;
-using MassTransit.Transports;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Configuration for azure service bus TOPIC
-/*var azureServiceBus = Bus.Factory.CreateUsingAzureServiceBus(busFactoryConfig =>
-{
-    busFactoryConfig.Host(builder.Configuration["ServiceBus:ConnectionString"]);
-
-    // specify the message Purchase to be sent to a specific topic
-    busFactoryConfig.Message<ProductDto>(configTopology =>
-    {
-        configTopology.SetEntityName(builder.Configuration["ServiceBus:TopicName"]);
-    });
-
-});*/
 
 // Configuration for azure service bus QUEUE
 var azureServiceBus = Bus.Factory.CreateUsingAzureServiceBus(busFactoryConfig =>
@@ -48,14 +33,16 @@ var azureServiceBus = Bus.Factory.CreateUsingAzureServiceBus(busFactoryConfig =>
     // specify the message of Order object to be sent to a specific queue
     busFactoryConfig.Message<ProductDto>(configTopology =>
     {
-        configTopology.SetEntityName(builder.Configuration["ServiceBus:QueueName"]);
+        configTopology.SetEntityName(builder.Configuration["ServiceBus:QueueNameUpdate"]);
+        configTopology.SetEntityName(builder.Configuration["ServiceBus:QueueNameDelete"]);
+        configTopology.SetEntityName(builder.Configuration["ServiceBus:QueueNameCreate"]); // :TopicName - For Topic configuration
     });
 });
 
 // Add Masstransit && RabbitMQ && Azure Service Bus
 builder.Services.AddMassTransit(x =>
 {
-    if (!builder.Environment.IsDevelopment())
+    if (builder.Environment.IsDevelopment())
     {
         Console.WriteLine("Azure Bus Started");
 
@@ -67,7 +54,7 @@ builder.Services.AddMassTransit(x =>
 
         // Azure Service Bus Configuration
         x.AddBus(provider => azureServiceBus);
-    }
+    } 
 });
 
 // Key Vault URL

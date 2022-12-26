@@ -4,30 +4,33 @@ using Services.Abstract;
 using Services.Dto;
 using MassTransit;
 using AutoMapper;
+using MassTransit.Transports;
+using Microsoft.Extensions.Configuration;
 
 namespace Services
 {
     public class ProductsService : IProductsService
     {
         private readonly IProductsRepository _productsRepository;
+        private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
         
         // Azure Queue
         private readonly ISendEndpointProvider _sendEndpointProvider;
 
         // For Rabbit MQ && Azure topics
-        //private readonly IPublishEndpoint _publishEndpoint;
-
-        // For Azure Service Bus Queue without function (triggers)
+        private readonly IPublishEndpoint _publishEndpoint;
 
         public ProductsService(IProductsRepository productsRepository,
                                ISendEndpointProvider sendEndpointProvider,
-                               //IPublishEndpoint publishEndpoint,
+                               IPublishEndpoint publishEndpoint,
+                               IConfiguration configuration,
                                IMapper mapper)
         {
             _productsRepository = productsRepository;
             _sendEndpointProvider = sendEndpointProvider;
-            //_publishEndpoint = publishEndpoint;
+            _publishEndpoint = publishEndpoint;
+            _configuration = configuration;
             _mapper = mapper;
         }
 
@@ -51,19 +54,17 @@ namespace Services
         {
             var productMap = _mapper.Map<ProductEntity>(product);
 
-            //await _productsRepository.CreateAsync(productMap);
-
+            product.Id = await _productsRepository.CreateAsync(productMap);
+              
             product.CrudOperationsInfo = CrudOperationsInfo.Create;
             product.CreatedDate = DateTime.UtcNow;
 
-            // Azure Service Bus Queue
-            var sendEndpoint = await _sendEndpointProvider.GetSendEndpoint(new Uri("sb://fridgeproduct.servicebus.windows.net/create-product-queue"));
-            await sendEndpoint.Send(product);
-
-            //await _productAzureQueuePublisherToQueue.Publish(product);
-
             // RabbitMq && Azure topics
-            //await _publishEndpoint.Publish(product);
+            // await _publishEndpoint.Publish(product);
+
+            // Azure Service Bus Queue
+            var sendEndpoint = await _sendEndpointProvider.GetSendEndpoint(new Uri(_configuration["ServiceBus:QueueCreateUri"]));
+            await sendEndpoint.Send(product);
 
             return productMap.Id;
         }
@@ -75,7 +76,13 @@ namespace Services
 
             product.CrudOperationsInfo = CrudOperationsInfo.Update;
             product.PreviousName = await _productsRepository.UpdateAsync(productId, productMap);
-            //await _publishEndpoint.Publish(product);
+
+            // RabbitMq && Azure topics
+            // await _publishEndpoint.Publish(product);
+
+            // Azure Service Bus Queue
+            var sendEndpoint = await _sendEndpointProvider.GetSendEndpoint(new Uri(_configuration["ServiceBus:QueueUpdateUri"]));
+            await sendEndpoint.Send(product);
 
             return product.PreviousName;
         }
@@ -90,7 +97,13 @@ namespace Services
             await _productsRepository.DeleteAsync(productMap);
 
             product.CrudOperationsInfo = CrudOperationsInfo.Delete;
-            //await _publishEndpoint.Publish(product);
+
+            // RabbitMq && Azure topics
+            // await _publishEndpoint.Publish(product);
+
+            // Azure Service Bus Queue
+            var sendEndpoint = await _sendEndpointProvider.GetSendEndpoint(new Uri(_configuration["ServiceBus:QueueDeleteUri"]));
+            await sendEndpoint.Send(product);
 
             return true;
         }
