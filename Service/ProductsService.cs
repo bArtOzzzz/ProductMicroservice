@@ -12,7 +12,6 @@ namespace Services
     public class ProductsService : IProductsService
     {
         private readonly IProductsRepository _productsRepository;
-        private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
         
         // Azure Queue
@@ -24,13 +23,11 @@ namespace Services
         public ProductsService(IProductsRepository productsRepository,
                                ISendEndpointProvider sendEndpointProvider,
                                IPublishEndpoint publishEndpoint,
-                               IConfiguration configuration,
                                IMapper mapper)
         {
             _productsRepository = productsRepository;
             _sendEndpointProvider = sendEndpointProvider;
             _publishEndpoint = publishEndpoint;
-            _configuration = configuration;
             _mapper = mapper;
         }
 
@@ -63,7 +60,7 @@ namespace Services
             // await _publishEndpoint.Publish(product);
 
             // Azure Service Bus Queue
-            var sendEndpoint = await _sendEndpointProvider.GetSendEndpoint(new Uri(_configuration["ServiceBus:QueueCreateUri"]));
+            var sendEndpoint = await _sendEndpointProvider.GetSendEndpoint(new Uri("sb://fridgeproduct.servicebus.windows.net/create-product-queue"));
             await sendEndpoint.Send(product);
 
             return productMap.Id;
@@ -81,7 +78,7 @@ namespace Services
             // await _publishEndpoint.Publish(product);
 
             // Azure Service Bus Queue
-            var sendEndpoint = await _sendEndpointProvider.GetSendEndpoint(new Uri(_configuration["ServiceBus:QueueUpdateUri"]));
+            var sendEndpoint = await _sendEndpointProvider.GetSendEndpoint(new Uri("sb://fridgeproduct.servicebus.windows.net/update-product-queue"));
             await sendEndpoint.Send(product);
 
             return product.PreviousName;
@@ -102,7 +99,7 @@ namespace Services
             // await _publishEndpoint.Publish(product);
 
             // Azure Service Bus Queue
-            var sendEndpoint = await _sendEndpointProvider.GetSendEndpoint(new Uri(_configuration["ServiceBus:QueueDeleteUri"]));
+            var sendEndpoint = await _sendEndpointProvider.GetSendEndpoint(new Uri("sb://fridgeproduct.servicebus.windows.net/delete-product-queue"));
             await sendEndpoint.Send(product);
 
             return true;
