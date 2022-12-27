@@ -9,7 +9,6 @@ using AutoMapper;
 using Services;
 using Xunit;
 using Moq;
-using Xunit.Sdk;
 
 namespace ProductUnitTests
 {
@@ -49,10 +48,8 @@ namespace ProductUnitTests
 
             _mockSendEndpointProvider.Setup(x => x.GetSendEndpoint(It.IsAny<Uri>())).Returns(Task.FromResult(_mockSendEndpoint.Object));
 
-
             _productsService = new ProductsService(_mockProductsRepository.Object, 
                                                    _mockSendEndpointProvider.Object, 
-                                                   _mockSendEndpoint.Object, 
                                                    _mockPublishEndpoint.Object, 
                                                    _mapper);
         }
