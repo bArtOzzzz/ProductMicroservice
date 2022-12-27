@@ -9,6 +9,7 @@ using AutoMapper;
 using Services;
 using Xunit;
 using Moq;
+using Xunit.Sdk;
 
 namespace ProductUnitTests
 {
@@ -20,7 +21,9 @@ namespace ProductUnitTests
 
         protected readonly Mock<IProductsRepository> _mockProductsRepository;
         protected readonly Mock<IPublishEndpoint> _mockPublishEndpoint;
+
         protected readonly Mock<ISendEndpointProvider> _mockSendEndpointProvider;
+        protected readonly Mock<ISendEndpoint> _mockSendEndpoint;
 
         protected readonly ProductsService _productsService;
 
@@ -39,9 +42,19 @@ namespace ProductUnitTests
 
             _mockProductsRepository = new Mock<IProductsRepository>();
             _mockPublishEndpoint = new Mock<IPublishEndpoint>();
+
+            EndpointConvention.Map<ProductDto>(new Uri("http://random"));
+            _mockSendEndpoint = new Mock<ISendEndpoint>();
             _mockSendEndpointProvider = new Mock<ISendEndpointProvider>();
 
-            _productsService = new ProductsService(_mockProductsRepository.Object, _mockSendEndpointProvider.Object, _mockPublishEndpoint.Object, _mapper);
+            _mockSendEndpointProvider.Setup(x => x.GetSendEndpoint(It.IsAny<Uri>())).Returns(Task.FromResult(_mockSendEndpoint.Object));
+
+
+            _productsService = new ProductsService(_mockProductsRepository.Object, 
+                                                   _mockSendEndpointProvider.Object, 
+                                                   _mockSendEndpoint.Object, 
+                                                   _mockPublishEndpoint.Object, 
+                                                   _mapper);
         }
 
         //___________________________________Get_All_Async___________________________________
@@ -56,7 +69,6 @@ namespace ProductUnitTests
             var result = await _productsService.GetAllAsync();
 
             // Assert
-            // TODO: Divide
             result.Should().BeOfType<List<ProductDto>>();
             result.Should().NotBeEmpty();
             result.Should().HaveCount(2);
@@ -118,6 +130,7 @@ namespace ProductUnitTests
             result.Should().Be(_productDtoFixture.Id);
 
             _mockProductsRepository.Verify(p => p.CreateAsync(It.IsAny<ProductEntity>()), Times.Once);
+            _mockSendEndpoint.Verify(x => x.Send(It.IsAny<ProductDto>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -134,6 +147,7 @@ namespace ProductUnitTests
             result.Should().BeEmpty();
 
             _mockProductsRepository.Verify(p => p.CreateAsync(It.IsAny<ProductEntity>()), Times.Once);
+            _mockSendEndpoint.Verify(x => x.Send(It.IsAny<ProductDto>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -163,6 +177,7 @@ namespace ProductUnitTests
             result.Should().BeEquivalentTo(_productDtoFixture.Name);
 
             _mockProductsRepository.Verify(p => p.UpdateAsync(It.IsAny<Guid>(), It.IsAny<ProductEntity>()), Times.Once);
+            _mockSendEndpoint.Verify(x => x.Send(It.IsAny<ProductDto>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -179,6 +194,7 @@ namespace ProductUnitTests
             result.Should().BeEmpty();
 
             _mockProductsRepository.Verify(p => p.UpdateAsync(It.IsAny<Guid>(), It.IsAny<ProductEntity>()), Times.Once);
+            _mockSendEndpoint.Verify(x => x.Send(It.IsAny<ProductDto>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -206,6 +222,7 @@ namespace ProductUnitTests
             result.Should().BeTrue();
 
             _mockProductsRepository.Verify(p => p.DeleteAsync(It.IsAny<ProductEntity>()), Times.Once);
+            _mockSendEndpoint.Verify(x => x.Send(It.IsAny<ProductDto>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]

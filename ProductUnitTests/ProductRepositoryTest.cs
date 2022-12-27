@@ -38,7 +38,7 @@ namespace ProductUnitTests
         protected async Task GetByIdAsync_OnSuccess_Return_Success()
         {
             // Arrange
-            var Id = new Guid("b1ee4d3c-99c6-4303-9cba-7241b09034ca");
+            var Id = new Guid("997D3739-F810-48A2-9363-D5BCDDDE1A10");
 
             // Act
             var result = await _productsRepository.GetByIdAsync(Id);
@@ -75,7 +75,7 @@ namespace ProductUnitTests
             // Arrange
             var productEntity = new ProductEntity
             {
-                Id = new Guid("17b170ca-9a3a-4fa8-bfac-0d64472c5174"),
+                Id = new Guid("997D3739-F810-48A2-9363-D5BCDDDE1A10"),
                 CreatedDate = DateTime.UtcNow,
                 Name = "NewMilkName",
                 LinkImage = "https://craves.everybodyshops.com/wp-content/uploads/ThinkstockPhotos-535489242-1024x683@2x.jpg"
@@ -96,7 +96,7 @@ namespace ProductUnitTests
             // Arrange
             var productEntity = new ProductEntity
             {
-                Id = new Guid("8a50d3ef-d0c4-42ad-96c3-febc515a17a3"),
+                Id = new Guid("A6BEA552-82DF-4BD6-B372-DF456969E59A"),
                 CreatedDate = DateTime.UtcNow,
                 Name = "Juice",
                 LinkImage = "https://images5.alphacoders.com/102/1022723.jpg"
